@@ -1,7 +1,7 @@
 ﻿# Aion Miner
 
 ### About
-Welcome to the Aion mining repository, this repository will contain documentation, mining details and reference implementations of CPU and CUDA miners for the Aion blockchain. 
+This is a fork of the Aion mining repository on which I intend to add OpenCL functionality, if my schedule allows.
 
 ### Algorithm Details
 
