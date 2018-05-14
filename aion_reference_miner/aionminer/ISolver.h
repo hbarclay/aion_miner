@@ -6,7 +6,7 @@
 #include <functional>
 
 enum class SolverType {
-	CPU = 0, CUDA
+	CPU = 0, CUDA, OPENCL
 };
 
 class ISolver {

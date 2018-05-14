@@ -147,7 +147,7 @@ if (USE_CUDA_TROMP)
     add_subdirectory(cuda_tromp)
 endif()
 if (USE_OPENCL)
-	add_subdirectory(opencl)
+	add_subdirectory(opencl_solver)
 endif()
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCE_FILES})
