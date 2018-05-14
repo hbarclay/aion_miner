@@ -18,5 +18,6 @@ private:
 
 	ISolver * GenCPUSolver(int use_opt);
 	ISolver * GenCUDASolver(int dev_id, int blocks, int threadsperblock);
+	ISolver * GenOpenCLSolver(int plat_id, int dev_id, int threadsperwf, int wfpersimd);
 };
 

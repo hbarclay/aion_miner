@@ -56,3 +56,9 @@ ISolver * MinerFactory::GenCUDASolver(int dev_id, int blocks,
 	return _solvers.back();
 
 }
+
+ISolver * MinerFactory::GenOpenCLSolver(int plat_id, int dev_id, 
+		int threadsperwf, int wfpersimd) {
+	_solvers.push_back(new OpenCLSolver(plat_id, dev_id, threadsperwf, wfpersimd));
+	return _solvers.back();
+}

@@ -5,7 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") #  -Wall
 
 ## Enable solvers here
 option(USE_CPU_TROMP "USE CPU_TROMP" OFF)
-option(USE_CUDA_TROMP "USE CUDA_TROMP" ON)
+option(USE_CUDA_TROMP "USE CUDA_TROMP" OFF)
+option(USE_OPENCL "USE OPENCL" ON)
 
 ## Add solvers here
 if (USE_CPU_TROMP)
@@ -15,6 +16,10 @@ endif()
 if (USE_CUDA_TROMP)
     add_definitions(-DUSE_CUDA_TROMP)
     message("-- USE_CUDA_TROMP DEFINED")
+endif()
+if (USE_OPENCL)
+	add_definitions(-DUSE_OPENCL)
+	message("-- USE_OPENCL DEFINED")
 endif()
 
 ########
@@ -141,6 +146,9 @@ endif()
 if (USE_CUDA_TROMP)
     add_subdirectory(cuda_tromp)
 endif()
+if (USE_OPENCL)
+	add_subdirectory(opencl)
+endif()
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCE_FILES})
 
@@ -153,6 +161,9 @@ if (USE_CPU_TROMP)
 endif()
 if (USE_CUDA_TROMP)
    target_link_libraries(${PROJECT_NAME} cuda_tromp)
+endif()
+if (USE_OPENCL)
+	target_link_libraries(${PROJECT_NAME} opencl)
 endif()
 
     

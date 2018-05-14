@@ -13,7 +13,11 @@ CREATE_SOLVER_STUB(cpu_tromp, "cpu_tromp_STUB")
 #else
 CREATE_SOLVER_STUB(cuda_tromp, "cuda_tromp_STUB")
 #endif
-
+#ifdef USE_OPENCL
+#include "../opencl/opencl_solver.hpp"
+#else
+CREATE_SOLVER_STUB(opencl, "opencl_STUB")
+#endif
 
 class CPUSolverTromp: public Solver<cpu_tromp> {
 public:
@@ -40,3 +44,12 @@ public:
 	virtual ~CUDASolverTromp() {
 	}
 };
+
+class OpenCLSolver : public Solver<opencl> {
+ public:
+	OpenCLSolver(int plat_id, int dev_id, int threadsperwf, int wvpersimd) :
+			Solver<opencl>(new opencl(), SolverType::OpenCL) {
+
+	}
+	virtual ~OpenCLSolver() {}
+}

@@ -166,7 +166,7 @@ int cuda_tpb[MAX_INSTANCES] = { 0 };
 
 int opencl_enabled[MAX_INSTANCES] = { 0 };
 int opencl_threads[MAX_INSTANCES] = { 0 };
-// todo: opencl local and global worksize
+// TODO: opencl local and global worksize
 
 
 void detect_AVX_and_AVX2()
