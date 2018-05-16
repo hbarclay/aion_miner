@@ -8,9 +8,10 @@ file(GLOB HEADER_LIST
 	opencl_solver.h
 	blake2b.h)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-#include_directories(${OPENCLi incldes
+find_package(OpenCL REQUIRED)
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${OpenCL_INCLUDE_DIRS})
 
 ADD_LIBRARY(${EXECUTABLE} STATIC ${SRC_LIST} ${HEADER_LIST})
-TARGET_LINK_LIBRARIES(${EXECUTABLE})
+TARGET_LINK_LIBRARIES(${EXECUTABLE} ${OpenCL_LIBRARIES})

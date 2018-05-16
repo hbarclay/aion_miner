@@ -2,6 +2,7 @@ project(aionminer)
 cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") #  -Wall
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 ## Enable solvers here
 option(USE_CPU_TROMP "USE CPU_TROMP" OFF)
@@ -163,7 +164,7 @@ if (USE_CUDA_TROMP)
    target_link_libraries(${PROJECT_NAME} cuda_tromp)
 endif()
 if (USE_OPENCL)
-	target_link_libraries(${PROJECT_NAME} opencl)
+	target_link_libraries(${PROJECT_NAME} opencl_solver)
 endif()
 
     
