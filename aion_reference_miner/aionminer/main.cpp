@@ -131,9 +131,9 @@ void print_cuda_info()
 {
 #if defined(USE_CUDA_DJEZO) || defined(USE_CUDA_TROMP)
 #ifdef USE_CUDA_DJEZO
-    int num_devices = cuda_djezo::getcount();
+	int num_devices = cuda_djezo::getcount();
 #elif USE_CUDA_TROMP
-    int num_devices = cuda_tromp::getcount();
+	int num_devices = cuda_tromp::getcount();
 #endif
 
 	std::cout << "Number of CUDA devices found: " << num_devices << std::endl;
@@ -143,9 +143,9 @@ void print_cuda_info()
 		std::string gpuname, version;
 		int smcount;
 #ifdef USE_CUDA_DJEZO
-        cuda_djezo::getinfo(0, i, gpuname, smcount, version);
+		cuda_djezo::getinfo(0, i, gpuname, smcount, version);
 #elif USE_CUDA_TROMP
-        cuda_tromp::getinfo(0, i, gpuname, smcount, version);
+		cuda_tromp::getinfo(0, i, gpuname, smcount, version);
 #endif
 		std::cout << "\t#" << i << " " << gpuname << " | SM version: " << version << " | SM count: " << smcount << std::endl;
 	}
@@ -153,9 +153,15 @@ void print_cuda_info()
 }
 
 void print_opencl_info() {
+#if defined(PRINT_OCL_INFO) || defined(USE_OPENCL)
+
 #ifdef PRINT_OCL_INFO
 	ocl_device_utils::print_opencl_devices();
+#else
+	opencl_solver::print_opencl_info(std::cout);
 #endif
+#endif
+
 }
 
 #define MAX_INSTANCES 8 * 2
@@ -164,14 +170,15 @@ int cuda_enabled[MAX_INSTANCES] = { 0 };
 int cuda_blocks[MAX_INSTANCES] = { 0 };
 int cuda_tpb[MAX_INSTANCES] = { 0 };
 
-int opencl_enabled[MAX_INSTANCES] = { 0 };
+int opencl_plat_enabled[MAX_INSTANCES] = { 0 };
+int opencl_dev_enabled[MAX_INSTANCES] = { 0 };
 int opencl_threads[MAX_INSTANCES] = { 0 };
 // TODO: opencl local and global worksize
 
 
 void detect_AVX_and_AVX2()
 {
-    // Fix on Linux
+	// Fix on Linux
 	//int cpuInfo[4] = {-1};
 	std::array<int, 4> cpui;
 	std::vector<std::array<int, 4>> data_;
@@ -254,7 +261,6 @@ void start_mining(int api_port, const std::string& host, const std::string& port
 	if (api) delete api;
 }
 
-
 int main(int argc, char* argv[])
 {
 #if defined(WIN32) && defined(NDEBUG)
@@ -268,7 +274,7 @@ int main(int argc, char* argv[])
 	std::cout << std::endl;
 
 	std::string location = "localhost:3333";
-	std::string user = "0x0000000000000000000000000000000000000000000000000000000000000000";
+	std::string user = "0xa0839ce5f544a5208ea80ca4d745236fd1da860dedc28308061c1137920b58a2";
 	std::string password = "x";
 	int num_threads = 0;
 	bool benchmark = false;
@@ -278,16 +284,18 @@ int main(int argc, char* argv[])
 	int cuda_device_count = 0;
 	int cuda_bc = 0;
 	int cuda_tbpc = 0;
+	int opencl_device_count = 0;
+	int opencl_plat_count = 0;
 	int force_cpu_ext = -1;
 
 	signal(SIGINT, stratum_sigint_handler);
 
 	//namespace boost::program_options = boost::program_options; 
-    boost::program_options::options_description desc("Options"); 
-    desc.add_options()
+	boost::program_options::options_description desc("Options"); 
+	desc.add_options()
 	  //General settings 
-      ("help,h", "Print help messages") 
-      ("location,l", boost::program_options::value<std::string>(&location), "Stratum server:port")
+	  ("help,h", "Print help messages") 
+	  ("location,l", boost::program_options::value<std::string>(&location), "Stratum server:port")
 	  ("username,u", boost::program_options::value<std::string>(&user), "Username (Aion Addess)")
 	  ("apiPort,a", boost::program_options::value<int>(&api_port), "Local port (default 0 = do not bind)")
 	  ("level,d", boost::program_options::value<int>(&log_level), "Debug print level (0 = print all, 5 = fatal only, default: 2)")
@@ -296,29 +304,32 @@ int main(int argc, char* argv[])
 	  ("threads,t",  boost::program_options::value<int>(&num_threads), "Number of CPU threads")
 	  ("ext,e", boost::program_options::value<int>(&force_cpu_ext), "Force CPU ext (0 = SSE2, 1 = AVX, 2 = AVX2)")
 	  //NVIDIA settings
-      ("ci", "Show CUDA info")
+	  ("ci", "Show CUDA info")
 	  ("cv", boost::program_options::value<int>(&use_old_cuda), "CUDA solver (0 = djeZo, 1 = tromp, default=1)")
 	  ("cd", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Enable mining on spec. devices")
 	  ("cb", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Number of blocks (per device)")
-	  ("ct", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Number of threads per block (per device)");
+	  ("ct", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Number of threads per block (per device)")
+	  ("cli", "Show OpenCL info")
+	  ("clp", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Select platform of each OpenCL device")
+	  ("cld", boost::program_options::value<std::vector<int>>()->multitoken()->composing(), "Enable OpenCL devices by ID");
 
  	boost::program_options::variables_map vm; 
-    try 
-    { 
-      boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
+	try 
+	{ 
+	  boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
 	  			.options(desc)
 				.style(
 					boost::program_options::command_line_style::unix_style ^
 					boost::program_options::command_line_style::allow_guessing |
-                	boost::program_options::command_line_style::allow_long_disguise
+					boost::program_options::command_line_style::allow_long_disguise
 				)
 				.run(),  
-                vm); // can throw 
+				vm); // can throw 
  
 		/** --help option
 		 */
-      	boost::program_options::notify(vm); // throws on error, so do after help in case 
-                        // there are any problems 
+	  	boost::program_options::notify(vm); // throws on error, so do after help in case 
+						// there are any problems 
 		if ( vm.count("help") || argc == 1 ) { 
 			std::cout << "Aion Reference Miner" << std::endl 
 					<< desc << std::endl
@@ -359,13 +370,34 @@ int main(int argc, char* argv[])
 				++cuda_tbpc;
 			}
 		}
+
+		if(vm.count("clp")) {
+			std::vector<int> devs = vm["clp"].as<std::vector<int>>();
+			for (int i = 0; i < devs.size() && i < MAX_INSTANCES; i++) {
+				opencl_plat_enabled[opencl_plat_count] = devs[i];
+				++opencl_plat_count;
+			}
+		}
+
+		if(vm.count("cld")) {
+			std::vector<int> devs = vm["cld"].as<std::vector<int>>();
+			for(int i = 0; i < devs.size() && i < MAX_INSTANCES; i++) {
+				opencl_dev_enabled[opencl_device_count] = devs[i];
+				++opencl_device_count;
+			}
+		}
+	
+		if(vm.count("cli")) {
+			print_opencl_info();
+			return 1;
+		}
 	} 
-    catch(boost::program_options::error& e) 
-    { 
-      std::cerr << "ERROR: " << e.what() << std::endl << std::endl; 
-      std::cerr << desc << std::endl; 
-      return 0; 
-    } 
+	catch(boost::program_options::error& e) 
+	{ 
+	  std::cerr << "ERROR: " << e.what() << std::endl << std::endl; 
+	  std::cerr << desc << std::endl; 
+	  return 0; 
+	} 
 
 	if (force_cpu_ext >= 0)
 	{
@@ -383,21 +415,27 @@ int main(int argc, char* argv[])
 	else
 		detect_AVX_and_AVX2();
 
+	if(opencl_plat_count!=opencl_device_count) {
+		std::cerr << "Input a platform ID corresponding to each device ID" << std::endl;
+		std::cout << desc << std::endl;
+		return 0;
+	}
+	
 	//init_logging init START
-    std::cout << "Setting log level to " << log_level << std::endl;
-    boost::log::add_console_log(
-        std::clog,
-        boost::log::keywords::auto_flush = true,
-        boost::log::keywords::filter = boost::log::trivial::severity >= log_level,
-        boost::log::keywords::format = (
-        boost::log::expressions::stream
-            << "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%H:%M:%S")
-            << "][" << boost::log::expressions::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID")
-            << "] "  << boost::log::expressions::smessage
-        )
-    );
-    boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
-    boost::log::core::get()->add_global_attribute("ThreadID", boost::log::attributes::current_thread_id());
+	std::cout << "Setting log level to " << log_level << std::endl;
+	boost::log::add_console_log(
+		std::clog,
+		boost::log::keywords::auto_flush = true,
+		boost::log::keywords::filter = boost::log::trivial::severity >= log_level,
+		boost::log::keywords::format = (
+		boost::log::expressions::stream
+			<< "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%H:%M:%S")
+			<< "][" << boost::log::expressions::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID")
+			<< "] "  << boost::log::expressions::smessage
+		)
+	);
+	boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
+	boost::log::core::get()->add_global_attribute("ThreadID", boost::log::attributes::current_thread_id());
 	//init_logging init END
 
 	BOOST_LOG_TRIVIAL(info) << "Using SSE2: YES";
@@ -422,11 +460,11 @@ int main(int argc, char* argv[])
 			start_mining(api_port, host, port, user, password,
 				&scSig,
 				_MinerFactory->GenerateSolvers(num_threads, cuda_device_count, cuda_enabled, cuda_blocks,
-				cuda_tpb));
+				cuda_tpb, opencl_device_count, opencl_plat_enabled, opencl_dev_enabled));
 		}
 		else
 		{
-			Solvers_doBenchmark(num_hashes, _MinerFactory->GenerateSolvers(num_threads, cuda_device_count, cuda_enabled, cuda_blocks, cuda_tpb));
+			Solvers_doBenchmark(num_hashes, _MinerFactory->GenerateSolvers(num_threads, cuda_device_count, cuda_enabled, cuda_blocks, cuda_tpb, opencl_device_count, opencl_plat_enabled, opencl_dev_enabled));
 		}
 	}
 	catch (std::runtime_error& er)

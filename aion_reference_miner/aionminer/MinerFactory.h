@@ -10,7 +10,7 @@ public:
 	~MinerFactory();
 
 	std::vector<ISolver *> GenerateSolvers(int cpu_threads, int cuda_count,
-			int* cuda_en, int* cuda_b, int* cuda_t);
+			int* cuda_en, int* cuda_b, int* cuda_t, int opencl_count, int* opencl_plat_en, int* opencl_dev_en);
 	void ClearAllSolvers();
 
 private:

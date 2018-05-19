@@ -1,3 +1,7 @@
+#include <string>
+#include <functional>
+#include <vector>
+#include <ostream>
 
 struct eq_opencl_context;
 
@@ -6,11 +10,14 @@ struct opencl_solver {
 	int wv;
 	int platform_id;
 	int device_id;
+
 	eq_opencl_context* context;	
 
-	opencl_solver(int plat_id, int dev_id);
+	opencl_solver(int plat_id, int dev_id) : platform_id(plat_id), device_id(dev_id) {}
 	std::string getdevinfo();
 
+
+    static void print_opencl_info(std::ostream& os);
 	static void getinfo(int plat_id, int dev_id, std::string& gpu_name, int& cu_count, std::string& version);
 
 	static void start(opencl_solver& device_context);

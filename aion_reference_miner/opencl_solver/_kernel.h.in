@@ -1,0 +1,5 @@
+const char* ocl_code = R"_mrb_(
+${PARAMS}
+${INPUT}
+)_mrb_";
+

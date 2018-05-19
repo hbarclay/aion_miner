@@ -10,8 +10,16 @@ MinerFactory::~MinerFactory() {
 }
 
 std::vector<ISolver *> MinerFactory::GenerateSolvers(int cpu_threads,
-		int cuda_count, int* cuda_en, int* cuda_b, int* cuda_t) {
+		int cuda_count, int* cuda_en, int* cuda_b, int* cuda_t, 
+		int opencl_count, int* opencl_plat_en, int* opencl_dev_en) {
 	std::vector<ISolver *> solversPointers;
+
+	for(int i = 0; i < opencl_count; i++) {
+		// FIXME these defaults
+		int tpwf = 0, wfps = 0;
+		solversPointers.push_back(
+				GenOpenCLSolver(opencl_plat_en[i], opencl_dev_en[i], tpwf, wfps));
+	}
 
 	for (int i = 0; i < cuda_count; ++i) {
 		solversPointers.push_back(
