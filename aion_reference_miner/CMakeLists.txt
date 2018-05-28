@@ -21,6 +21,8 @@ endif()
 if (USE_OPENCL)
 	add_definitions(-DUSE_OPENCL)
 	message("-- USE_OPENCL DEFINED")
+	find_package(OpenCL REQUIRED)
+	include_directories(${OPENCL_INCLUDE_DIRS})
 endif()
 
 ########

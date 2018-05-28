@@ -47,15 +47,15 @@ public:
 
 class OpenCLSolver : public Solver<opencl_solver> {
  public:
-	OpenCLSolver(int plat_id, int dev_id, int threadsperwf, int wvpersimd) :
+	OpenCLSolver(int plat_id, int dev_id, int wgsize, int numwg) :
 			Solver<opencl_solver>(new opencl_solver(plat_id, dev_id), SolverType::OPENCL) {
 		// FIXME
-		if (threadsperwf > 0) {
-			_context->threadsperwv = threadsperwf;
+		if (wgsize > 0) {
+			_context->wgsize = wgsize;
 		}
 	
-		if (wvpersimd > 0) {
-			_context->wv = wvpersimd;
+		if (numwg > 0) {
+			_context->numwg = numwg;
 		}
 	}
 	virtual ~OpenCLSolver() {}
